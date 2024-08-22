@@ -1,0 +1,228 @@
+Processor: It is a hardware device based on SILICON(ATLEAST TILL TODAY) which executed instructions given
+           E.g Intel i7 12Gen-1265U
+
+Core: It is a section of the processor which is cabable of executing one whole process 
+
+[ c1 | c2  ]
+[ c3 | c4  ]
+[ c5 | c6  ]
+[ c7 | c8  ]
+[ c9 | c10 ]
+
+SINGLE THREAD, SINGLE PROCESS, SYNCHRONOUS PROGRAMS!
+
+
+Delays: IO Delay, CPU-BOUND Delay!
+
+
+17 Questions:
+
+1) What are we doing?
+    - We are trying to do more work in our program per second
+    - I want my efficiency in my program for which I want to my hardware better
+
+2) How?
+    - By using the OS for support. We are requesting OS to run inpendent sections of my program parallely if possible or cocurrently if nothing else works out!
+
+3) Syntax wise what to do?
+    - Each of your independent functions can be treated "logical threads". They can be scheduled by OS if your create a thread object and attach it to one callable with right paramters
+
+    - Also remember to wait for threads to finish
+    |   |   | OR
+    DETACH FROM SPAWNED THREADS
+
+4) Why did you join threads?
+    - Because main thread cannot finish before other threads as spawned threads need to report need to report back to main via signals.
+    If main is already finished, then thread has to become daemon.
+
+    daemon is a thread running in background
+
+5) What is std::thread?
+    - It is a class which is a wrapper around a native platform specific OS-level thread.
+
+6) Can we copy threads?
+    - No, once mini-program is started, copying it would mean duplicating and doing the same thing again!
+
+
+7) Can we make a container of thread?
+    - Yes, since thread instances are objects, you can do this!
+
+8) What is a race condition? 
+    - 2 or more thread are fighting TO PERFORM A WRITE OPERATION ON A SHARED MEMORY
+
+9) What is a critical section?
+    - A part of a program where race-condition can happen to cause data integrity issue, in-coherenet output, or worse!
+
+10) Syntantically, how to do this?
+    - Choose between the plethora(too many) of available choice for sychronization primitived.
+    - mutex: a binary semaphore which needs to locked/unlocked manually.
+    - lock_gaurd: which is a scope based lock that uses RAII
+    -unique_lock: It can be locked/unlocked manually as well as WITH RAII rules
+    -condition variable : To implement sychronization based on PRODUCER/CONSUMER model
+
+11)  How will I know which one to use?
+    - Common sense!
+
+12) How will I learn all this?
+    - That's where Harshit comes into the picture
+    - also, cppcon and cocurrency in action books are great resources!
+
+13) All this sound like OS level stuff why I am learning it?
+    - Because all developers need to use hardware efficiently
+
+14) What is this SYNCHRONOUS/ASYNCHRONOUS stuff?
+    - If you start command/instruction N only after COMMAND/ INSTRUCTION N-1 IS FULLY COMPLETED, execution is synchronous,
+
+    else 
+        ASYNCHRONOUS
+    
+15) Is async this same async I have learnt in JS/and/or other languages?
+    - Yes, OF Course!
+
+16) What if I Don't understand all this before the marathon?
+    -WELL.............................
+        - I heard TCS is still hiring!
+    
+
+
+
+
+
+try{
+    std::lock_gaurd<std::mutex>lk(mt);
+    amount>=10;
+    PerformActionModification();
+
+}
+catch(std::runtime_error &ex){
+    std::err << ex.what()<<"\n";
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+
+#include <iostream>
+#include <functional>
+#include <array>
+#include <thread>
+#include <mutex>
+
+/*
+    create an array of 3 objects
+        - thread 1 should calculate square of each number in the array and store in a result array (position 1 to 5)
+        - thread 2 should calculate cube of each number in the array and store in a result array(position 6 to 10)
+        - thread 3 should calculate factorial of each number in the array and store in a result array(position 11 to 15)
+
+        Assumptions : Numbers in the input array will be between 1 to 10
+
+*/
+
+
+std::mutex mt;
+using fn = std::function<void(int &, std::array<int, 15> &, std::array<int, 15> &)>;
+using ThreadArray = std::array<std::thread, 3>;
+using FnCon = std::array<fn, 3>;
+using InputContainer = std::array<int, 15>;
+
+void buildFunction(int &i,InputContainer& result,const InputContainer &in,FnCon &fns){
+    fns[0] = [&](int &,InputContainer&,const InputContainer &)
+    {
+        std::lock_guard<std::mutex> lk(mt);
+        for (int j = 0; j < 5; j++)
+            result[i++] = in[j] * in[j];
+    };
+
+    fns[1] = [&](int &, InputContainer &, const InputContainer &)
+    {
+        std::lock_guard<std::mutex> lk(mt);
+        for (int j = 5; j < 10; j++)
+            result[i++] = in[j] * in[j] * in[j];
+    };
+    fns[2] = [&](int &, InputContainer &, const InputContainer &)
+    {
+        std::lock_guard<std::mutex> lk(mt);
+        for (int j = 10; j < 15; j++)
+        {
+            int pr = 1;
+            for (int i = in[j]; i >= 1; i--)
+            {
+                pr *= i;
+            }
+            result[i++] = pr;
+        }
+    };
+}
+void MapFnsToThreadArray(FnCon &fns, InputContainer &in,InputContainer &result,int &i,ThreadArray &th){
+    for (int k = 0; k < 3;k++){
+        th[k] = std::thread(std::ref(fns[i]), std::ref(i), std::ref(result), std::ref(in));
+
+    }
+}
+int main(int argc, char const *argv[])
+{
+    int i = 0;
+  
+    InputContainer result;
+    fn square = [](int &i, std::array<int, 15> &result, std::array<int, 15> in)
+    {
+        std::lock_guard<std::mutex> lk(mt);
+        for (int j = 0; j < 5; j++)
+            result[i++] = in[j] * in[j];
+    };
+
+    fn cube = [](int &i, std::array<int, 15> &result, std::array<int, 15> in)
+    {
+        std::lock_guard<std::mutex> lk(mt);
+        for (int j = 5; j < 10; j++)
+            result[i++] = in[j] * in[j] * in[j];
+    };
+    fn by10 = [](int &i, std::array<int, 15> &result, std::array<int, 15> in)
+    {
+        std::lock_guard<std::mutex> lk(mt);
+        for (int j = 10; j < 15; j++)
+        {
+            int pr = 1;
+            for (int i = in[j]; i >= 1; i--)
+            {
+                pr *= i;
+            }
+            result[i++] = pr;
+        }
+    };
+    FnCon fns;
+    InputContainer in{1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5};
+    buildFunction(i, result, in, fns);
+
+    ThreadArray
+        arr;
+    
+    MapFnsToThreadArray(fns, in, result, i, arr);
+
+    for (std::thread &th : arr)
+        if (th.joinable())
+            th.join();
+
+    for (auto i : result)
+        std::cout << i << "\n";
+
+    return 0;
+}
+
+
+*/

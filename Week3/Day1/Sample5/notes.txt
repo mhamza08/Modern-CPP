@@ -1,0 +1,100 @@
+Processor: It is a hardware device based on SILICON(ATLEAST TILL TODAY) which executed instructions given
+           E.g Intel i7 12Gen-1265U
+
+Core: It is a section of the processor which is cabable of executing one whole process 
+
+[ c1 | c2  ]
+[ c3 | c4  ]
+[ c5 | c6  ]
+[ c7 | c8  ]
+[ c9 | c10 ]
+
+SINGLE THREAD, SINGLE PROCESS, SYNCHRONOUS PROGRAMS!
+
+
+Delays: IO Delay, CPU-BOUND Delay!
+
+
+17 Questions:
+
+1) What are we doing?
+    - We are trying to do more work in our program per second
+    - I want my efficiency in my program for which I want to my hardware better
+
+2) How?
+    - By using the OS for support. We are requesting OS to run inpendent sections of my program parallely if possible or cocurrently if nothing else works out!
+
+3) Syntax wise what to do?
+    - Each of your independent functions can be treated "logical threads". They can be scheduled by OS if your create a thread object and attach it to one callable with right paramters
+
+    - Also remember to wait for threads to finish
+    |   |   | OR
+    DETACH FROM SPAWNED THREADS
+
+4) Why did you join threads?
+    - Because main thread cannot finish before other threads as spawned threads need to report need to report back to main via signals.
+    If main is already finished, then thread has to become daemon.
+
+    daemon is a thread running in background
+
+5) What is std::thread?
+    - It is a class which is a wrapper around a native platform specific OS-level thread.
+
+6) Can we copy threads?
+    - No, once mini-program is started, copying it would mean duplicating and doing the same thing again!
+
+
+7) Can we make a container of thread?
+    - Yes, since thread instances are objects, you can do this!
+
+8) What is a race condition? 
+    - 2 or more thread are fighting TO PERFORM A WRITE OPERATION ON A SHARED MEMORY
+
+9) What is a critical section?
+    - A part of a program where race-condition can happen to cause data integrity issue, in-coherenet output, or worse!
+
+10) Syntantically, how to do this?
+    - Choose between the plethora(too many) of available choice for sychronization primitived.
+    - mutex: a binary semaphore which needs to locked/unlocked manually.
+    - lock_gaurd: which is a scope based lock that uses RAII
+    -unique_lock: It can be locked/unlocked manually as well as WITH RAII rules
+    -condition variable : To implement sychronization based on PRODUCER/CONSUMER model
+
+11)  How will I know which one to use?
+    - Common sense!
+
+12) How will I learn all this?
+    - That's where Harshit comes into the picture
+    - also, cppcon and cocurrency in action books are great resources!
+
+13) All this sound like OS level stuff why I am learning it?
+    - Because all developers need to use hardware efficiently
+
+14) What is this SYNCHRONOUS/ASYNCHRONOUS stuff?
+    - If you start command/instruction N only after COMMAND/ INSTRUCTION N-1 IS FULLY COMPLETED, execution is synchronous,
+
+    else 
+        ASYNCHRONOUS
+    
+15) Is async this same async I have learnt in JS/and/or other languages?
+    - Yes, OF Course!
+
+16) What if I Don't understand all this before the marathon?
+    -WELL.............................
+        - I heard TCS is still hiring!
+    
+
+
+
+
+
+try{
+    std::lock_gaurd<std::mutex>lk(mt);
+    amount>=10;
+    PerformActionModification();
+
+}
+catch(std::runtime_error &ex){
+    std::err << ex.what()<<"\n";
+
+}
